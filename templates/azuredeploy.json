@@ -1,0 +1,183 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "functionAppResourceId": {
+            "type": "string"
+        }
+    },
+    "variables": {
+        "networkInterfaceFunctionResourceId": "[concat(parameters('functionAppResourceId'), '/functions/HandleNetworkInterfaceEventsAsync')]",
+        "privateEndpointResourceId": "[concat(parameters('functionAppResourceId'), '/functions/HandlePrivateEndpointEventsAsync')]",
+        "systemTopicName": "[subscription().subscriptionId]",
+        "systemTopicResourceId": "[resourceId('Microsoft.EventGrid/systemTopics', variables('systemTopicName'))]",
+        "networkInterfaceCreatedSubscriptionName": "[concat(variables('systemTopicName'), '/HandleNetworkInterfaceCreated')]",
+        "networkInterfaceDeletedSubscriptionName": "[concat(variables('systemTopicName'), '/HandleNetworkInterfaceDeleted')]",
+        "privateEndpointCreatedSubscriptionName": "[concat(variables('systemTopicName'), '/HandlePrivateEndpointCreated')]",
+        "privateEndpointDeletedSubscriptionName": "[concat(variables('systemTopicName'), '/HandlePrivateEndpointDeleted')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.EventGrid/systemTopics",
+            "apiVersion": "2020-04-01-preview",
+            "name": "[variables('systemTopicName')]",
+            "location": "global",
+            "properties": {
+                "source": "[subscription().id]",
+                "topicType": "microsoft.resources.subscriptions"
+            }
+        },
+        {
+            "type": "Microsoft.EventGrid/systemTopics/eventSubscriptions",
+            "apiVersion": "2020-04-01-preview",
+            "name": "[variables('networkInterfaceCreatedSubscriptionName')]",
+            "dependsOn": [
+                "[variables('systemTopicResourceId')]"
+            ],
+            "properties": {
+                "destination": {
+                    "properties": {
+                        "resourceId": "[variables('networkInterfaceFunctionResourceId')]",
+                        "maxEventsPerBatch": 1,
+                        "preferredBatchSizeInKilobytes": 64
+                    },
+                    "endpointType": "AzureFunction"
+                },
+                "filter": {
+                    "includedEventTypes": [
+                        "Microsoft.Resources.ResourceWriteSuccess"
+                    ],
+                    "advancedFilters": [
+                        {
+                            "values": [
+                                "/networkInterfaces/"
+                            ],
+                            "operatorType": "StringContains",
+                            "key": "subject"
+                        }
+                    ]
+                },
+                "labels": [],
+                "eventDeliverySchema": "EventGridSchema",
+                "retryPolicy": {
+                    "maxDeliveryAttempts": 30,
+                    "eventTimeToLiveInMinutes": 1440
+                }
+            }
+        },
+        {
+            "type": "Microsoft.EventGrid/systemTopics/eventSubscriptions",
+            "apiVersion": "2020-04-01-preview",
+            "name": "[variables('networkInterfaceDeletedSubscriptionName')]",
+            "dependsOn": [
+                "[variables('systemTopicResourceId')]"
+            ],
+            "properties": {
+                "destination": {
+                    "properties": {
+                        "resourceId": "[variables('networkInterfaceFunctionResourceId')]",
+                        "maxEventsPerBatch": 1,
+                        "preferredBatchSizeInKilobytes": 64
+                    },
+                    "endpointType": "AzureFunction"
+                },
+                "filter": {
+                    "includedEventTypes": [
+                        "Microsoft.Resources.ResourceDeleteSuccess"
+                    ],
+                    "advancedFilters": [
+                        {
+                            "values": [
+                                "/privateEndpoints/"
+                            ],
+                            "operatorType": "StringContains",
+                            "key": "subject"
+                        }
+                    ]
+                },
+                "labels": [],
+                "eventDeliverySchema": "EventGridSchema",
+                "retryPolicy": {
+                    "maxDeliveryAttempts": 30,
+                    "eventTimeToLiveInMinutes": 1440
+                }
+            }
+        },
+        {
+            "type": "Microsoft.EventGrid/systemTopics/eventSubscriptions",
+            "apiVersion": "2020-04-01-preview",
+            "name": "[variables('privateEndpointCreatedSubscriptionName')]",
+            "dependsOn": [
+                "[variables('systemTopicResourceId')]"
+            ],
+            "properties": {
+                "destination": {
+                    "properties": {
+                        "resourceId": "[variables('privateEndpointResourceId')]",
+                        "maxEventsPerBatch": 1,
+                        "preferredBatchSizeInKilobytes": 64
+                    },
+                    "endpointType": "AzureFunction"
+                },
+                "filter": {
+                    "includedEventTypes": [
+                        "Microsoft.Resources.ResourceWriteSuccess"
+                    ],
+                    "advancedFilters": [
+                        {
+                            "values": [
+                                "/privateEndpoints/"
+                            ],
+                            "operatorType": "StringContains",
+                            "key": "subject"
+                        }
+                    ]
+                },
+                "labels": [],
+                "eventDeliverySchema": "EventGridSchema",
+                "retryPolicy": {
+                    "maxDeliveryAttempts": 30,
+                    "eventTimeToLiveInMinutes": 1440
+                }
+            }
+        },
+        {
+            "type": "Microsoft.EventGrid/systemTopics/eventSubscriptions",
+            "apiVersion": "2020-04-01-preview",
+            "name": "[variables('privateEndpointDeletedSubscriptionName')]",
+            "dependsOn": [
+                "[variables('systemTopicResourceId')]"
+            ],
+            "properties": {
+                "destination": {
+                    "properties": {
+                        "resourceId": "[variables('privateEndpointResourceId')]",
+                        "maxEventsPerBatch": 1,
+                        "preferredBatchSizeInKilobytes": 64
+                    },
+                    "endpointType": "AzureFunction"
+                },
+                "filter": {
+                    "includedEventTypes": [
+                        "Microsoft.Resources.ResourceDeleteSuccess"
+                    ],
+                    "advancedFilters": [
+                        {
+                            "values": [
+                                "/privateEndpoints/"
+                            ],
+                            "operatorType": "StringContains",
+                            "key": "subject"
+                        }
+                    ]
+                },
+                "labels": [],
+                "eventDeliverySchema": "EventGridSchema",
+                "retryPolicy": {
+                    "maxDeliveryAttempts": 30,
+                    "eventTimeToLiveInMinutes": 1440
+                }
+            }
+        }
+    ]
+}
