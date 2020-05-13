@@ -28,8 +28,8 @@ namespace Rgom.PrivateDns.Functions
 			this.hostNameTagName = configuration.GetValue<string>("HostnameTagName");
 		}
 
-		[FunctionName(nameof(HandleNicEventsAsync))]
-		public async Task HandleNicEventsAsync(
+		[FunctionName(nameof(HandleNetworkInterfaceEventsAsync))]
+		public async Task HandleNetworkInterfaceEventsAsync(
 			[EventGridTrigger]EventGridEvent eventGridEvent,
 			[DurableClient] IDurableOrchestrationClient starter,
 			ILogger log
