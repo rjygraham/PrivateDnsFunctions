@@ -29,9 +29,17 @@ namespace Rgom.PrivateDns.Functions.Services
 			return await client.Value.RecordSets.CreateOrUpdateAsync(privateDnsResourceGroupName, privateZoneName, recordType, relativeRecordSetName, parameters);
 		}
 
-		public async Task DeleteAsync(string privateZoneName, RecordType recordType, string relativeRecordSetName)
+		public async Task<bool> DeleteAsync(string privateZoneName, RecordType recordType, string relativeRecordSetName)
 		{
-			await client.Value.RecordSets.DeleteAsync(privateDnsResourceGroupName, privateZoneName, recordType, relativeRecordSetName);
+			try
+			{
+				await client.Value.RecordSets.DeleteAsync(privateDnsResourceGroupName, privateZoneName, recordType, relativeRecordSetName);
+				return true;
+			}
+			catch (Exception)
+			{
+				return false;
+			}
 		}
 	}
 }

@@ -33,7 +33,7 @@ namespace Rgom.PrivateDns.Functions.Services
 			}
 			catch (StorageException ex)
 			{
-				throw;
+				return false;
 			}
 		}
 
@@ -66,11 +66,11 @@ namespace Rgom.PrivateDns.Functions.Services
 			{
 				TableOperation deleteOperation = TableOperation.Delete(entity);
 				TableResult result = await table.Value.ExecuteAsync(deleteOperation);
-				return result.HttpStatusCode == (int)HttpStatusCode.Accepted;
+				return result.HttpStatusCode == (int)HttpStatusCode.NoContent;
 			}
 			catch (StorageException ex)
 			{
-				throw;
+				return false;
 			}
 		}
 	}
