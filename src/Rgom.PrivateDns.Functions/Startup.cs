@@ -25,8 +25,8 @@ namespace Rgom.PrivateDns.Functions
 			builder.Services.AddScoped<IPrivateDnsManagementService, PrivateDnsManagementService>(sp => new PrivateDnsManagementService
 				(
 					sp.GetService<TokenCredentials>(),
-					Environment.GetEnvironmentVariable("PrivateDnsSubscription"),
-					Environment.GetEnvironmentVariable("PrivateDnsResourceGroup")
+					Environment.GetEnvironmentVariable("PrivateDnsSubscriptionId"),
+					Environment.GetEnvironmentVariable("PrivateDnsResourceGroupName")
 				)
 			);
 		}
