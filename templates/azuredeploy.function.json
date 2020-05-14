@@ -183,7 +183,7 @@
 						"[variables('functionResourceId')]"
 					],
 					"properties": {
-						"packageUri": "[variables('zipPackageUrl')]"
+						"packageUri": "[parameters('zipPackageUrl')]"
 					}
 				}
 			]
