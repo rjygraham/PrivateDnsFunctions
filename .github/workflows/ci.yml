@@ -1,0 +1,36 @@
+name: CI Build
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 3.1.101
+    - name: Install dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build ./src/Rgom.PrivateDns.Functions.sln --configuration Release --no-restore
+    - name: Test
+      run: dotnet test ./src/Rgom.PrivateDns.Functions.sln --no-restore --verbosity normal
+    - name: Publish
+      run: dotnet build ./src/Rgom.PrivateDns.Functions.sln -p:DeployOnBuild=true -p:PublishProfile=Release -p:WebPublishMethod=Package -p:PackageAsSingleFile=true -p:platform="Any CPU" -p:Configuration="Release" -o ./publish
+    - name: Automatic Releases
+      uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: "latest"
+        prerelease: true
+        title: "Development Build"
+        files: |
+          ./publish/Rgom.PrivateDns.Functions.zip
