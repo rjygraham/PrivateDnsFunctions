@@ -3,7 +3,10 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "functionAppResourceId": {
-            "type": "string"
+            "type": "string",
+            "metadata": {
+				"description": "Azure Resource ID of the Function App to which the subscription system topic events will be sent."
+			}
         }
     },
     "variables": {

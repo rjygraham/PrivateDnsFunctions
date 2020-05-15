@@ -4,39 +4,63 @@
 	"parameters": {
 		"location": {
 			"type": "string",
-			"defaultValue": "[resourceGroup().location]"
+			"defaultValue": "[resourceGroup().location]",
+			"metadata": {
+				"description": "Azure region to which the Azure Function and associated resources will be deployed."
+			}
 		},
 		"name": {
-			"type": "string"
+			"type": "string",
+			"metadata": {
+				"description": "Name for Azure Function and associated resources."
+			}
 		},
 		"tenantId": {
 			"type": "securestring",
-			"defaultValue": "[subscription().tenantId]"
+			"defaultValue": "[subscription().tenantId]",
+			"metadata": {
+				"description": "Azure AD tenant ID to which this deployment applies. Default value is the tenant ID of the target Subscription."
+			}
 		},
 		"privateDnsSubscriptionId": {
 			"type": "securestring",
-			"defaultValue": "[subscription().subscriptionId]"
+			"defaultValue": "[subscription().subscriptionId]",
+			"metadata": {
+				"description": "ID of the Subscription which contains your environment's private DNS zones."
+			}
 		},
 		"privateDnsResourceGroupName": {
-			"type": "securestring"
+			"type": "securestring",
+			"metadata": {
+				"description": "Name of the Resource Group which contains your environment's private DNS zones."
+			}
 		},
 		"defaultPrivateDnsZone": {
-			"type": "securestring"
+			"type": "securestring",
+			"metadata": {
+				"description": "The name of your private DNS zone for Azure VMs and internal load balancers. (Ex: azure.company.net)"
+			}
 		},
 		"hostnameTagName": {
 			"type": "securestring",
-			"defaultValue": "hostname"
+			"defaultValue": "hostname",
+			"metadata": {
+				"description": "Tag name to use for specifying hostnames on Network Interface resources."
+			}
 		},
 		"zipPackageUrl": {
 			"type": "string",
-			"defaultValue": "https://github.com/rjygraham/PrivateDnsFunctions/releases/download/latest/Rgom.PrivateDns.Functions.zip"
+			"defaultValue": "https://github.com/rjygraham/PrivateDnsFunctions/releases/download/latest/Rgom.PrivateDns.Functions.zip",
+			"metadata": {
+				"description": "URL to MSDeploy zip file of the code in this repo"
+			}
 		}
 	},
 	"variables": {
 		"appInsightsName": "[concat(parameters('name'), '-insights')]",
 		"appInsightsResourceId": "[resourceId('microsoft.insights/components', variables('appInsightsName'))]",
-		"functionName": "[concat(parameters('name'), '-func')]",
-		"functionResourceId": "[resourceId('Microsoft.Web/sites', variables('functionName'))]",
+		"functionAppName": "[concat(parameters('name'), '-func')]",
+		"functionAppResourceId": "[resourceId('Microsoft.Web/sites', variables('functionAppName'))]",
 		"hostingPlanName": "[concat(parameters('name'), '-hostingplan')]",
 		"hostingPlanResourceId": "[resourceId('Microsoft.Web/serverfarms', variables('hostingPlanName'))]",
 		"keyVaultName": "[concat(parameters('name'), '-kvlt')]",
@@ -94,7 +118,7 @@
 		{
 			"type": "Microsoft.Web/sites",
 			"apiVersion": "2018-11-01",
-			"name": "[variables('functionName')]",
+			"name": "[variables('functionAppName')]",
 			"location": "[parameters('location')]",
 			"dependsOn": [
 				"[variables('appInsightsResourceId')]",
@@ -106,7 +130,7 @@
 			},
 			"kind": "functionapp",
 			"properties": {
-				"name": "[variables('functionName')]",
+				"name": "[variables('functionAppName')]",
 				"serverFarmId": "[variables('hostingPlanResourceId')]",
 				"siteConfig": {
 					"appSettings": [
@@ -147,7 +171,7 @@
 					"apiVersion": "2019-08-01",
 					"name": "appsettings",
 					"dependsOn": [
-						"[variables('functionResourceId')]",
+						"[variables('functionAppResourceId')]",
 						"[variables('keyVaultResourceId')]",
 						"[resourceId('Microsoft.KeyVault/vaults/secrets/', variables('keyVaultName'), variables('appSettings').AppInsightsConnectionString)]",
 						"[resourceId('Microsoft.KeyVault/vaults/secrets/', variables('keyVaultName'), variables('appSettings').AppInsightsInstrumentationKey)]",
@@ -180,7 +204,7 @@
 					"location": "[parameters('location')]",
 					"apiVersion": "2015-08-01",
 					"dependsOn": [
-						"[variables('functionResourceId')]"
+						"[variables('functionAppResourceId')]"
 					],
 					"properties": {
 						"packageUri": "[parameters('zipPackageUrl')]"
@@ -194,7 +218,7 @@
 			"name": "[variables('keyVaultName')]",
 			"location": "[parameters('location')]",
 			"dependsOn": [
-				"[variables('functionResourceId')]"
+				"[variables('functionAppResourceId')]"
 			],
 			"properties": {
 				"enabledForDeployment": false,
@@ -208,7 +232,7 @@
 				"accessPolicies": [
 					{
 						"tenantId": "[subscription().tenantId]",
-						"objectId": "[reference(variables('functionResourceId'), '2016-08-01', 'Full').identity.principalId]",
+						"objectId": "[reference(variables('functionAppResourceId'), '2016-08-01', 'Full').identity.principalId]",
 						"permissions": {
 							"secrets": [
 								"get"
@@ -339,5 +363,11 @@
 				}
 			]
 		}
-	]
+	],
+	"outputs": {
+		"functionAppResourceId": {
+			"type": "string",
+			"value": "[variables('functionAppResourceId')]"
+		}
+	}
 }
