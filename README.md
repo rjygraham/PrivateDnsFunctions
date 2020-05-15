@@ -9,7 +9,7 @@ This is useful for enabling automatic DNS registration at scale across any numbe
 There are three steps for setting up this solution:
 
 1. Deploy the Azure Function using the included template (`./templates/azuredeploy.function.json`).
-1. Create a `Private DNS Zone Contributor` role assignment for the Azure Function's system managed identity over the scope of your private DNS zones.
+1. Create a `Private DNS Zone Contributor` role assignment for the Azure Function's system managed identity over the scope of your private DNS zones. You'll also need to create a `Reader` role assignment for the Azure Function's system managed identity for the entire scope of your environment so it can get Private Endpoints and Network Interfaces.
 1. Create the system topic Event Grid subscriptions to be handled by the newly deployed Azure Function. For increased scalability, this template should be incorporated into a baseline Blueprint assigned to your subscriptions.
 
 ## Assumptions
@@ -42,9 +42,9 @@ Use the Deploy to Azure button below to begin deployment of the Azure Function. 
 
 [![Deploy To Azure](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Frjygraham%2FPrivateDnsFunctions%2Fmaster%2Ftemplates%2Fazuredeploy.function.json)  [![Visualize](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/visualizebutton.svg?sanitize=true)](http://armviz.io/#/?load=https%3A%2F%2Fraw.githubusercontent.com%2Frjygraham%2FPrivateDnsFunctions%2Fmaster%2Ftemplates%2Fazuredeploy.function.json)
 
-## 2. Create Role Assignment
+## 2. Create Role Assignments
 
-Follow one of the following guides for creating a `Private DNS Zone Contributor` role assignment for the newly deploy Azure Function's system managed identity over the private DNS zone scope:
+Use one of the following guides for creating a `Private DNS Zone Contributor` role assignment for the newly deploy Azure Function's system managed identity over the private DNS zone scope and a `Reader` role assignment for the Azure Function's system managed identity for the entire scope of your environment:
 
 - [Add or remove Azure role assignments using the Azure portal](https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal)
 - [Add or remove Azure role assignments using Azure PowerShell](https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-powershell)
@@ -54,7 +54,7 @@ Follow one of the following guides for creating a `Private DNS Zone Contributor`
 
 The last step is to create the system topic Event Grid subscriptions in all the Azure Subscriptions you'd like to be handled by the Azure Function. As previously mentioned, you should consider including this template in a baseline Blueprint. [Quickstart: Define and assign a blueprint in the portal](https://docs.microsoft.com/en-us/azure/governance/blueprints/create-blueprint-portal)
 
-In order to deploy this template, you will need the Azure Function Resource Id from step #1. 
+In order to deploy this template, you will need the Azure Function App Resource Id from step #1. This value is an output of running the deployment from step #1.
 
 [![Deploy To Azure](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Frjygraham%2FPrivateDnsFunctions%2Fmaster%2Ftemplates%2Fazuredeploy.systemtopics.json)  [![Visualize](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/visualizebutton.svg?sanitize=true)](http://armviz.io/#/?load=https%3A%2F%2Fraw.githubusercontent.com%2Frjygraham%2FPrivateDnsFunctions%2Fmaster%2Ftemplates%2Fazuredeploy.systemtopics.json)
 
