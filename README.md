@@ -16,6 +16,11 @@ There are three steps for setting up this solution:
 1. All private DNS zones in your environment are consolidated in a single Resource Group
 1. Your environment utilizes a single private DNS zone VMs and Load Balancers (i.e. non-PrivateEndpoint resources)
 
+If your environment doesn't have the Private Endpoint private DNS zones created, consider utilizing this template to deploy the DNZ zones an optionally linking to a Virtual Network:
+
+[![Deploy To Azure](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Frjygraham%2FPrivateDnsFunctions%2Fmaster%2Ftemplates%2Fazuredeploy.privatedns.json)  [![Visualize](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/visualizebutton.svg?sanitize=true)](http://armviz.io/#/?load=https%3A%2F%2Fraw.githubusercontent.com%2Frjygraham%2FPrivateDnsFunctions%2Fmaster%2Ftemplates%2Fazuredeploy.privatedns.json)
+
+
 ## 1. Deploy the Azure Function
 
 Use the Deploy to Azure button below to begin deployment of the Azure Function. You will need to provide the following parameter values:
