@@ -54,12 +54,6 @@ Use one of the following guides for creating a `Private DNS Zone Contributor` ro
 
 The last step is to create the system topic Event Grid subscriptions in all the Azure Subscriptions you'd like to be handled by the Azure Function. As previously mentioned, you should consider including this template in a baseline Blueprint. [Quickstart: Define and assign a blueprint in the portal](https://docs.microsoft.com/en-us/azure/governance/blueprints/create-blueprint-portal)
 
-In order to deploy this template, you will need the Azure Function App Resource Id from step #1. This value is an output of running the deployment from step #1.
-
-[![Deploy To Azure](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Frjygraham%2FPrivateDnsFunctions%2Fmaster%2Ftemplates%2Fazuredeploy.systemtopics.json)  [![Visualize](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/visualizebutton.svg?sanitize=true)](http://armviz.io/#/?load=https%3A%2F%2Fraw.githubusercontent.com%2Frjygraham%2FPrivateDnsFunctions%2Fmaster%2Ftemplates%2Fazuredeploy.systemtopics.json)
-
-# Validation
-
 In order to validate the setup is successful, create a Network Interface with a tag key matching the value supplied for the `hostnameTagName` parameter value. You should observe an A record added to the private DNS zone specified in the `defaultPrivateDnsZone` parameter value within a minute or two of successful NIC creation.
 
 Delete the Network Interface and observe the A record is successfully removed.
