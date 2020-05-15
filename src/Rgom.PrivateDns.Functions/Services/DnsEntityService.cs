@@ -19,7 +19,10 @@ namespace Rgom.PrivateDns.Functions.Services
 				var storageAccount = CloudStorageAccount.Parse(connectionString);
 				var client = storageAccount.CreateCloudTableClient();
 
-				return client.GetTableReference(Constants.DnsEntitiesTableName);
+				var table = client.GetTableReference(Constants.DnsEntitiesTableName);
+				table.CreateIfNotExistsAsync().GetAwaiter().GetResult();
+
+				return table;
 			});
 		}
 
