@@ -11,6 +11,7 @@ using Rgom.PrivateDns.Functions.Models;
 using Rgom.PrivateDns.Functions.Services;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Rgom.PrivateDns.Functions
@@ -81,8 +82,15 @@ namespace Rgom.PrivateDns.Functions
 
 			string hostname = null;
 
-			// If NIC wasn't tagged there's nothing for us to do so just return.
-			if (nic.Tags == null || !nic.Tags.TryGetValue(hostNameTagName, out hostname))
+			// If NIC wasn't tagged [with a value] there's nothing for us to do so just return.
+			if (nic.Tags == null)
+			{
+				return true;
+			}
+
+			hostname = nic.Tags.SingleOrDefault(s => s.Key.Equals(hostNameTagName, StringComparison.OrdinalIgnoreCase)).Value;
+
+			if (string.IsNullOrWhiteSpace(hostname))
 			{
 				return true;
 			}
