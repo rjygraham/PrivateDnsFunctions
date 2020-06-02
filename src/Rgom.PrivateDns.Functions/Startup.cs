@@ -1,4 +1,5 @@
-﻿using Microsoft.Azure.Functions.Extensions.DependencyInjection;
+﻿using Dynamitey;
+using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Rest;
 using Rgom.PrivateDns.Functions.Services;
@@ -17,6 +18,12 @@ namespace Rgom.PrivateDns.Functions
 			builder.Services.AddSingleton<IDnsEntityService, DnsEntityService>(sp => new DnsEntityService(Environment.GetEnvironmentVariable("AzureWebJobsStorage")));
 
 			builder.Services.AddScoped(sp => sp.GetService<ICredentialService>().GetTokenCredentialsAsync().GetAwaiter().GetResult());
+
+			builder.Services.AddScoped<IComputeManagementService, ComputeManagementService>(sp =>
+			{
+				return new ComputeManagementService(sp.GetService<TokenCredentials>());
+			});
+
 			builder.Services.AddScoped<INetworkManagementService, NetworkManagementService>(sp =>
 			{
 				return new NetworkManagementService(sp.GetService<TokenCredentials>());
@@ -30,5 +37,5 @@ namespace Rgom.PrivateDns.Functions
 				)
 			);
 		}
-    }
+	}
 }

@@ -12,12 +12,15 @@
     "variables": {
         "networkInterfaceFunctionResourceId": "[concat(parameters('functionAppResourceId'), '/functions/HandleNetworkInterfaceEventsAsync')]",
         "privateEndpointResourceId": "[concat(parameters('functionAppResourceId'), '/functions/HandlePrivateEndpointEventsAsync')]",
+        "virtualMachineResourceId": "[concat(parameters('functionAppResourceId'), '/functions/HandleVirtualMachineEventsAsync')]",
         "systemTopicName": "[subscription().subscriptionId]",
         "systemTopicResourceId": "[resourceId('Microsoft.EventGrid/systemTopics', variables('systemTopicName'))]",
         "networkInterfaceCreatedSubscriptionName": "[concat(variables('systemTopicName'), '/HandleNetworkInterfaceCreated')]",
         "networkInterfaceDeletedSubscriptionName": "[concat(variables('systemTopicName'), '/HandleNetworkInterfaceDeleted')]",
         "privateEndpointCreatedSubscriptionName": "[concat(variables('systemTopicName'), '/HandlePrivateEndpointCreated')]",
-        "privateEndpointDeletedSubscriptionName": "[concat(variables('systemTopicName'), '/HandlePrivateEndpointDeleted')]"
+        "privateEndpointDeletedSubscriptionName": "[concat(variables('systemTopicName'), '/HandlePrivateEndpointDeleted')]",
+        "virtualMachineStartedSubscriptionName": "[concat(variables('systemTopicName'), '/HandleVirtualMachineStarted')]",
+        "virtualMachineDeallocatedSubscriptionName": "[concat(variables('systemTopicName'), '/HandleVirtualMachineDeallocated')]"
     },
     "resources": [
         {
@@ -171,6 +174,96 @@
                             ],
                             "operatorType": "StringContains",
                             "key": "subject"
+                        }
+                    ]
+                },
+                "labels": [],
+                "eventDeliverySchema": "EventGridSchema",
+                "retryPolicy": {
+                    "maxDeliveryAttempts": 30,
+                    "eventTimeToLiveInMinutes": 1440
+                }
+            }
+        },
+        {
+            "type": "Microsoft.EventGrid/systemTopics/eventSubscriptions",
+            "apiVersion": "2020-04-01-preview",
+            "name": "[variables('virtualMachineStartedSubscriptionName')]",
+            "dependsOn": [
+                "[variables('systemTopicResourceId')]"
+            ],
+            "properties": {
+                "destination": {
+                    "properties": {
+                        "resourceId": "[variables('virtualMachineResourceId')]",
+                        "maxEventsPerBatch": 1,
+                        "preferredBatchSizeInKilobytes": 64
+                    },
+                    "endpointType": "AzureFunction"
+                },
+                "filter": {
+                    "includedEventTypes": [
+                        "Microsoft.Resources.ResourceActionSuccess"
+                    ],
+                    "advancedFilters": [
+                        {
+                            "values": [
+                                "/virtualMachines/"
+                            ],
+                            "operatorType": "StringContains",
+                            "key": "subject"
+                        },
+                        {
+                            "values": [
+                                "Microsoft.Compute/virtualMachines/start/action"
+                            ],
+                            "operatorType": "StringContains",
+                            "key": "data.operationName"
+                        }
+                    ]
+                },
+                "labels": [],
+                "eventDeliverySchema": "EventGridSchema",
+                "retryPolicy": {
+                    "maxDeliveryAttempts": 30,
+                    "eventTimeToLiveInMinutes": 1440
+                }
+            }
+        },
+        {
+            "type": "Microsoft.EventGrid/systemTopics/eventSubscriptions",
+            "apiVersion": "2020-04-01-preview",
+            "name": "[variables('virtualMachineDeallocatedSubscriptionName')]",
+            "dependsOn": [
+                "[variables('systemTopicResourceId')]"
+            ],
+            "properties": {
+                "destination": {
+                    "properties": {
+                        "resourceId": "[variables('virtualMachineResourceId')]",
+                        "maxEventsPerBatch": 1,
+                        "preferredBatchSizeInKilobytes": 64
+                    },
+                    "endpointType": "AzureFunction"
+                },
+                "filter": {
+                    "includedEventTypes": [
+                        "Microsoft.Resources.ResourceActionSuccess"
+                    ],
+                    "advancedFilters": [
+                        {
+                            "values": [
+                                "/virtualMachines/"
+                            ],
+                            "operatorType": "StringContains",
+                            "key": "subject"
+                        },
+                        {
+                            "values": [
+                                "Microsoft.Compute/virtualMachines/deallocate/action"
+                            ],
+                            "operatorType": "StringContains",
+                            "key": "data.operationName"
                         }
                     ]
                 },
