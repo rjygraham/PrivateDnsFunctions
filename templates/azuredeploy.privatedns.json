@@ -1,0 +1,91 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"defaultPrivateDnsZoneName": {
+			"type": "string",
+			"metadata": {
+				"description": "The name of your private DNS zone for Azure VMs and internal load balancers. (Ex: azure.company.net)"
+			}
+		},
+		"nonRegionalPrivateEndpointDnsZones": {
+			"type": "array",
+			"defaultValue": [
+				"privatelink.database.windows.net",
+				"privatelink.blob.core.windows.net",
+				"privatelink.table.core.windows.net",
+				"privatelink.queue.core.windows.net",
+				"privatelink.file.core.windows.net",
+				"privatelink.web.core.windows.net",
+				"privatelink.dfs.core.windows.net",
+				"privatelink.documents.azure.com",
+				"privatelink.mongo.cosmos.azure.com",
+				"privatelink.cassandra.cosmos.azure.com",
+				"privatelink.gremlin.cosmos.azure.com",
+				"privatelink.table.cosmos.azure.com",
+				"privatelink.mysql.database.azure.com",
+				"privatelink.mariadb.database.azure.com",
+				"privatelink.vaultcore.azure.net",
+				"privatelink.azconfig.io",
+				"privatelink.servicebus.windows.net",
+				"privatelink.azurewebsites.net",
+				"privatelink.api.azureml.ms"
+			],
+			"metadata": {
+				"description": "Private DNS zones aligned to the Azure service Private Endpoints that are non-regional."
+			}
+		},
+		"regionalPrivateEndpointDnsZones": {
+			"type": "array",
+			"defaultValue": [
+			],
+			"metadata": {
+				"description": "Private DNS zones aligned to the Azure service Private Endpoints that are regional."
+			}
+		},
+		"vnetResourceId": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "Optional Resource ID of your HUB Virtual Network to which the private DNS zones should be linked."
+			}
+		}
+	},
+	"variables": {
+		"privateDnsZones": "[union(createArray(parameters('defaultPrivateDnsZoneName')), parameters('nonRegionalPrivateEndpointDnsZones'), parameters('regionalPrivateEndpointDnsZones'))]",
+		"vnetResourceIdSegments": "[split(parameters('vnetResourceId'), '/')]",
+		"vnetName": "[variables('vnetResourceIdSegments')[sub(length(variables('vnetResourceIdSegments')), 1)]]"
+	},
+	"resources": [
+		{
+			"type": "Microsoft.Network/privateDnsZones",
+			"apiVersion": "2018-09-01",
+			"name": "[variables('privateDnsZones')[copyIndex('zoneCopy')]]",
+			"location": "global",
+			"copy": {
+				"name": "zoneCopy",
+				"count": "[length(variables('privateDnsZones'))]"
+			},
+			"properties": {
+			},
+			"resources": [
+				{
+					"condition": "[not(equals(parameters('vnetResourceId'), ''))]",
+					"type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+					"apiVersion": "2018-09-01",
+					"name": "[concat(variables('privateDnsZones')[copyIndex('zoneCopy')], '/', variables('vnetName'), '-link')]",
+					"location": "global",
+					"dependsOn": [
+						"[resourceId('Microsoft.Network/privateDnsZones', variables('privateDnsZones')[copyIndex('zoneCopy')])]"
+					],
+					"properties": {
+						"virtualNetwork": {
+							"id": "[parameters('vnetResourceId')]"
+						},
+						"registrationEnabled": false
+					}
+				}
+			]
+		}
+	]
+}

@@ -96,6 +96,41 @@ namespace Rgom.PrivateDns.Functions
 				return new InternalServerErrorResult();
 			}
 		}
+
+		[FunctionName(nameof(TestHandleVirtualMachineEventsAsync))]
+		public async Task TestHandleVirtualMachineEventsAsync(
+			[HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] EventGridEvent eventGridEvent,
+			[DurableClient] IDurableOrchestrationClient starter,
+			ILogger log
+		)
+		{
+			dynamic data = eventGridEvent.Data;
+			string subscriptionId = data.subscriptionId;
+			string operationName = data.operationName;
+			string resourceId = eventGridEvent.Subject;
+
+			var durableParameters = new OrchestratorParameters
+			{
+				SubscriptionId = subscriptionId,
+				ResourceId = resourceId
+			};
+
+			string instanceId;
+
+			switch (operationName)
+			{
+				case "Microsoft.Compute/virtualMachines/start/action":
+					instanceId = await starter.StartNewAsync(nameof(VirtualMachineEventFunctions.OrchestrateVirtualMachineStartedAsync), eventGridEvent.Id, durableParameters);
+					break;
+				case "Microsoft.Compute/virtualMachines/deallocate/action":
+					instanceId = await starter.StartNewAsync(nameof(VirtualMachineEventFunctions.OrchestrateVirtualMachineDeallocatedAsync), eventGridEvent.Id, durableParameters);
+					break;
+				default:
+					throw new Exception();
+			}
+
+			log.LogInformation($"Started orchestration with ID = '{instanceId}'.");
+		}
 	}
 }
 
