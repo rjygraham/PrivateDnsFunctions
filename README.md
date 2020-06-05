@@ -55,6 +55,8 @@ Use one of the following guides for creating a `Private DNS Zone Contributor` ro
 - [Add or remove Azure role assignments using Azure PowerShell](https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-powershell)
 - [Add or remove Azure role assignments using Azure CLI](https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-cli)
 
+Alternatively, if a `Reader` is too permissive you may create a custom RBAC role that includes read on private endpoints, network interfaces, and virtual machines. See this [template](templates/azuredeploy.rbac.json) for an example that may be deployed at the resource, resouce group, subscription, or management group scope. 
+
 ## 3. Create the System Topic Event Grid Subscriptions
 
 The last step is to create the system topic Event Grid subscriptions in all the Azure Subscriptions you'd like to be handled by the Azure Function. As previously mentioned, you should consider including this template in a baseline Blueprint. [Quickstart: Define and assign a blueprint in the portal](https://docs.microsoft.com/en-us/azure/governance/blueprints/create-blueprint-portal)

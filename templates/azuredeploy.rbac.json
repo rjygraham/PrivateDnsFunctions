@@ -1,0 +1,63 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "roleName": {
+            "type": "string",
+            "defaultValue": "Private DNS Event Handler",
+            "metadata": {
+                "description": "Display name for the custom RBAC role"
+            }
+        },
+        "description": {
+            "type": "string",
+            "defaultValue": "Lets you view everything for private endpoints, network interfaces, and virtual machines, but not make any changes",
+            "metadata": {
+                "description": "Description for the custom RBAC role"
+            }
+        },
+        "assignableScopes": {
+            "type": "array",
+            "metadata": {
+                "description": "One or more assignable scopes. May include resources, resource groups, subscriptions, and management groups (preview)"
+            }
+        }
+    },
+    "variables": {
+        "rbacGuid": "[guid(deployment().name)]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Authorization/roleDefinitions",
+            "apiVersion": "2017-09-01",
+            "name": "[variables('rbacGuid')]",
+            "properties": {
+                "roleName": "[parameters('roleName')]",
+                "IsCustom": true,
+                "Description": "[parameters('description')]",
+                "permissions": [
+                    {
+                        "Actions": [
+                            "Microsoft.Network/privateEndpoints/*/read",
+                            "Microsoft.Network/networkInterfaces/*/read",
+                            "Microsoft.Compute/virtualMachines/*/read"
+                        ],
+                        "NotActions": [
+                        ]
+                    }
+                ],
+                "AssignableScopes": "[parameters('assignableScopes')]"
+            }
+        }
+    ],
+    "outputs": {
+        "assignableScopes": {
+            "type": "array",
+            "value": "[parameters('assignableScopes')]"
+        },
+        "rbacGuid": {
+            "type": "string",
+            "value": "[variables('rbacGuid')]"
+        }
+    }
+}
