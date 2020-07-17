@@ -48,6 +48,7 @@ namespace Rgom.PrivateDns.Functions
 			""mysql.database.azure.com"": ""privatelink.mysql.database.azure.com"",
 			""mariadb.database.azure.com"": ""privatelink.mariadb.database.azure.com"",
 			""vault.azure.net"": ""privatelink.vaultcore.azure.net"",
+			""vaultcore.azure.net"": ""privatelink.vaultcore.azure.net"",
 			""privatelink.azconfig.io"": ""privatelink.azconfig.io"",
 			""servicebus.windows.net"": ""privatelink.servicebus.windows.net"",
 			""azurewebsites.net"": ""privatelink.azurewebsites.net"",
