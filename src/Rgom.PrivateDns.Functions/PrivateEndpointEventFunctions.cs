@@ -23,16 +23,13 @@ namespace Rgom.PrivateDns.Functions
 		/// <summary>
 		/// Still missing:
 		/// 
-		/// privatelink.postgres.database.azure.com
-		/// {guid}.privatelink..azmk8s.io
-		/// privatelink.search.windows.net
-		/// privatelink.azurecr.io
+		/// privatelink.{region}.azmk8s.io
 		/// privatelink.{region}.backup.windowsazure.com
-		/// topic.{region}.privatelink.eventgrid.azure.net
-		/// domain.{region}.privatelink.eventgrid.azure.net
 		/// </summary>
 		private readonly Dictionary<string, string> zoneMapping = JsonConvert.DeserializeObject<Dictionary<string, string>>(@"
 		{
+			""azure-automation.net"": ""privatelink.azure-automation.net"",
+			""database.windows.net"": ""privatelink.database.windows.net"",
 			""database.windows.net"": ""privatelink.database.windows.net"",
 			""blob.core.windows.net"": ""privatelink.blob.core.windows.net"",
 			""table.core.windows.net"": ""privatelink.table.core.windows.net"",
@@ -45,14 +42,30 @@ namespace Rgom.PrivateDns.Functions
 			""cassandra.cosmos.azure.com"": ""privatelink.cassandra.cosmos.azure.com"",
 			""gremlin.cosmos.azure.com"": ""privatelink.gremlin.cosmos.azure.com"",
 			""table.cosmos.azure.com"": ""privatelink.table.cosmos.azure.com"",
+			""postgres.database.azure.com"": ""privatelink.postgres.database.azure.com"",
 			""mysql.database.azure.com"": ""privatelink.mysql.database.azure.com"",
 			""mariadb.database.azure.com"": ""privatelink.mariadb.database.azure.com"",
 			""vault.azure.net"": ""privatelink.vaultcore.azure.net"",
 			""vaultcore.azure.net"": ""privatelink.vaultcore.azure.net"",
-			""privatelink.azconfig.io"": ""privatelink.azconfig.io"",
+			""search.windows.net"": ""privatelink.search.windows.net"",
+			""azurecr.io"": ""privatelink.azurecr.io"",
+			""azconfig.io"": ""privatelink.azconfig.io"",
 			""servicebus.windows.net"": ""privatelink.servicebus.windows.net"",
+			""servicebus.windows.net"": ""privatelink.servicebus.windows.net"",
+			""azure-devices.net"": ""privatelink.azure-devices.net"",
+			""servicebus.windows.net"": ""privatelink.servicebus.windows.net"",
+			""eventgrid.azure.net"": ""privatelink.eventgrid.azure.net"",
+			""eventgrid.azure.net"": ""privatelink.eventgrid.azure.net"",
 			""azurewebsites.net"": ""privatelink.azurewebsites.net"",
-			""api.azureml.ms"": ""privatelink.api.azureml.ms""
+			""api.azureml.ms"": ""privatelink.api.azureml.ms"",
+			""azure-devices.net"": ""privatelink.azure-devices.net"",
+			""service.signalr.net"": ""privatelink.service.signalr.net"",
+			""monitor.azure.com"": ""privatelink.monitor.azure.com"",
+			""oms.opinsights.azure.com"": ""privatelink.oms.opinsights.azure.com"",
+			""ods.opinsights.azure.com"": ""privatelink.ods.opinsights.azure.com"",
+			""agentsvc.azure-automation.com"": ""privatelink.agentsvc.azure-automation.com"",
+			""cognitiveservices.azure.com"": ""privatelink.cognitiveservices.azure.com"",
+			""afs.azure.net"": ""privatelink.afs.azure.net""
 		}");
 
 		private readonly INetworkManagementService networkManagementService;
