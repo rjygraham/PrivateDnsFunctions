@@ -9,7 +9,9 @@ namespace Rgom.PrivateDns.Functions.Services
 	internal class PrivateDnsManagementService : IPrivateDnsManagementService
 	{
 		private readonly Lazy<PrivateDnsManagementClient> client;
+		private readonly string privateDnsSubscriptionId;
 		private readonly string privateDnsResourceGroupName;
+		
 
 		public PrivateDnsManagementService(TokenCredentials credentials, string privateDnsSubscriptionId, string privateDnsResourceGroupName)
 		{
@@ -21,7 +23,13 @@ namespace Rgom.PrivateDns.Functions.Services
 				return result;
 			});
 
+			this.privateDnsSubscriptionId = privateDnsSubscriptionId;
 			this.privateDnsResourceGroupName = privateDnsResourceGroupName;
+		}
+
+		public string GetPrivateDnsZoneResourceId(string privateDnsZone)
+		{
+			return $"/subscriptions/{privateDnsSubscriptionId}/resourceGroups/{privateDnsResourceGroupName}/providers/Microsoft.Network/privateDnsZones/{privateDnsZone}";
 		}
 
 		public async Task<RecordSet> CreateOrUpdateAsync(string privateZoneName, RecordType recordType, string relativeRecordSetName, RecordSet parameters)

@@ -8,6 +8,7 @@
     <PackageReference Include="Microsoft.Azure.Management.Compute" Version="36.1.0" />
     <PackageReference Include="Microsoft.Azure.Management.Network" Version="19.20.0-preview" />
     <PackageReference Include="Microsoft.Azure.Management.PrivateDns" Version="1.0.0" />
+    <PackageReference Include="Microsoft.Azure.Management.ResourceManager" Version="3.10.0-preview" />
     <PackageReference Include="Microsoft.Azure.Services.AppAuthentication" Version="1.4.0" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.DurableTask" Version="2.2.1" />
     <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.EventGrid" Version="2.1.0" />

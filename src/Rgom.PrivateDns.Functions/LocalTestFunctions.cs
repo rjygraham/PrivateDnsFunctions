@@ -83,9 +83,9 @@ namespace Rgom.PrivateDns.Functions
 					case "Microsoft.Resources.ResourceWriteSuccess":
 						instanceId = await starter.StartNewAsync(nameof(PrivateEndpointEventFunctions.OrchestratePrivateEndpointCreatedAsync), eventGridEvent.Id, durableParameters);
 						break;
-					case "Microsoft.Resources.ResourceDeleteSuccess":
-						instanceId = await starter.StartNewAsync(nameof(PrivateEndpointEventFunctions.OrchestratePrivateEndpointDeletedAsync), eventGridEvent.Id, durableParameters);
-						break;
+					//case "Microsoft.Resources.ResourceDeleteSuccess":
+					//	instanceId = await starter.StartNewAsync(nameof(PrivateEndpointEventFunctions.OrchestratePrivateEndpointDeletedAsync), eventGridEvent.Id, durableParameters);
+					//	break;
 					default:
 						throw new Exception();
 				}

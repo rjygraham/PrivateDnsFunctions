@@ -1,5 +1,4 @@
-﻿using Dynamitey;
-using Microsoft.Azure.Functions.Extensions.DependencyInjection;
+﻿using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Rest;
 using Rgom.PrivateDns.Functions.Services;
@@ -19,10 +18,7 @@ namespace Rgom.PrivateDns.Functions
 
 			builder.Services.AddScoped(sp => sp.GetService<ICredentialService>().GetTokenCredentialsAsync().GetAwaiter().GetResult());
 
-			builder.Services.AddScoped<IComputeManagementService, ComputeManagementService>(sp =>
-			{
-				return new ComputeManagementService(sp.GetService<TokenCredentials>());
-			});
+			builder.Services.AddScoped<IComputeManagementService, ComputeManagementService>(sp => new ComputeManagementService(sp.GetService<TokenCredentials>()));
 
 			builder.Services.AddScoped<INetworkManagementService, NetworkManagementService>(sp =>
 			{
@@ -36,6 +32,8 @@ namespace Rgom.PrivateDns.Functions
 					Environment.GetEnvironmentVariable("PrivateDnsResourceGroupName")
 				)
 			);
+
+			builder.Services.AddScoped<IResourceManagementService, ResourceManagementService>(sp => new ResourceManagementService(sp.GetService<TokenCredentials>()));
 		}
 	}
 }
