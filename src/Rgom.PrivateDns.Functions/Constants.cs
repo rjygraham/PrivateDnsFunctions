@@ -15,8 +15,10 @@ namespace Rgom.PrivateDns.Functions
 
 		/// Still missing:
 		/// 
-		/// privatelink.{region}.azmk8s.io
-		/// privatelink.{region}.backup.windowsazure.com
+		/// privatelink.monitor.azure.com
+		/// privatelink.oms.opinsights.azure.com
+		/// privatelink.ods.opinsights.azure.com
+		/// privatelink.agentsvc.azure-automation.com
 		internal static readonly Dictionary<string, string> ZoneMapping = JsonConvert.DeserializeObject<Dictionary<string, string>>(@"
 		{
 			""Microsoft.ContainerService/managedClusters/management"": ""privatelink.{0}.azmk8s.io"",
