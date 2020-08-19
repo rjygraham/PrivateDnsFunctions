@@ -18,7 +18,6 @@
         "networkInterfaceCreatedSubscriptionName": "[concat(variables('systemTopicName'), '/HandleNetworkInterfaceCreated')]",
         "networkInterfaceDeletedSubscriptionName": "[concat(variables('systemTopicName'), '/HandleNetworkInterfaceDeleted')]",
         "privateEndpointCreatedSubscriptionName": "[concat(variables('systemTopicName'), '/HandlePrivateEndpointCreated')]",
-        "privateEndpointDeletedSubscriptionName": "[concat(variables('systemTopicName'), '/HandlePrivateEndpointDeleted')]",
         "virtualMachineStartedSubscriptionName": "[concat(variables('systemTopicName'), '/HandleVirtualMachineStarted')]",
         "virtualMachineDeallocatedSubscriptionName": "[concat(variables('systemTopicName'), '/HandleVirtualMachineDeallocated')]"
     },
@@ -128,44 +127,6 @@
                 "filter": {
                     "includedEventTypes": [
                         "Microsoft.Resources.ResourceWriteSuccess"
-                    ],
-                    "advancedFilters": [
-                        {
-                            "values": [
-                                "/privateEndpoints/"
-                            ],
-                            "operatorType": "StringContains",
-                            "key": "subject"
-                        }
-                    ]
-                },
-                "labels": [],
-                "eventDeliverySchema": "EventGridSchema",
-                "retryPolicy": {
-                    "maxDeliveryAttempts": 30,
-                    "eventTimeToLiveInMinutes": 1440
-                }
-            }
-        },
-        {
-            "type": "Microsoft.EventGrid/systemTopics/eventSubscriptions",
-            "apiVersion": "2020-04-01-preview",
-            "name": "[variables('privateEndpointDeletedSubscriptionName')]",
-            "dependsOn": [
-                "[variables('systemTopicResourceId')]"
-            ],
-            "properties": {
-                "destination": {
-                    "properties": {
-                        "resourceId": "[variables('privateEndpointResourceId')]",
-                        "maxEventsPerBatch": 1,
-                        "preferredBatchSizeInKilobytes": 64
-                    },
-                    "endpointType": "AzureFunction"
-                },
-                "filter": {
-                    "includedEventTypes": [
-                        "Microsoft.Resources.ResourceDeleteSuccess"
                     ],
                     "advancedFilters": [
                         {
