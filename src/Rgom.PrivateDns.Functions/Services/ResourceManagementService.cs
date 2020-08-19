@@ -30,8 +30,9 @@ namespace Rgom.PrivateDns.Functions.Services
 			var deployment = new Deployment(new DeploymentProperties(DeploymentMode.Incremental, template: formattedTemplate));
 
 			var result = await client.Value.Deployments.CreateOrUpdateAsync(resourceGroupName, $"pedns.{DateTime.Now.ToString("yyyyMMdd-HHmmss")}", deployment);
-
-			return !string.IsNullOrWhiteSpace(result?.Id);
+			
+			var succeededState = result?.Properties?.ProvisioningState.Equals("Succeeded", StringComparison.OrdinalIgnoreCase);
+			return succeededState.HasValue && succeededState.Value;
 		}
 	}
 }
