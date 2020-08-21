@@ -40,10 +40,10 @@ namespace Rgom.PrivateDns.Functions
 				switch (eventType)
 				{
 					case "Microsoft.Resources.ResourceWriteSuccess":
-						instanceId = await starter.StartNewAsync(nameof(NetworkInterfaceEventFunctions.OrchestrateNetworkInterfaceCreatedAsync), eventGridEvent.Id, durableParameters);
+						instanceId = await starter.StartNewAsync(nameof(NetworkInterfaceEventFunctions.OrchestrateNetworkInterfaceWriteAsync), eventGridEvent.Id, durableParameters);
 						break;
 					case "Microsoft.Resources.ResourceDeleteSuccess":
-						instanceId = await starter.StartNewAsync(nameof(NetworkInterfaceEventFunctions.OrchestrateNetworkInterfaceDeletedAsync), eventGridEvent.Id, durableParameters);
+						instanceId = await starter.StartNewAsync(nameof(NetworkInterfaceEventFunctions.OrchestrateNetworkInterfaceDeleteAsync), eventGridEvent.Id, durableParameters);
 						break;
 					default:
 						throw new Exception();

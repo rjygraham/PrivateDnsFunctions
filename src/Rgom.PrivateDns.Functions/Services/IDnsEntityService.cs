@@ -9,7 +9,7 @@ namespace Rgom.PrivateDns.Functions.Services
 	public interface IDnsEntityService
 	{
 		Task<bool> InsertOrUpdateDnsEntityAsync(DnsEntity entity);
-		Task<List<DnsEntity>> ListDnsEntitiesAsync(string resourceId);
+		Task<DnsEntity> GetDnsEntityAsync(string resourceId);
 		Task<bool> DeleteDnsEntityAsync(DnsEntity entity);
 	}
 }
