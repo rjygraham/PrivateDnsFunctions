@@ -1,6 +1,7 @@
 using Microsoft.Azure.EventGrid.Models;
 using Microsoft.Azure.Management.Network.Models;
 using Microsoft.Azure.Management.PrivateDns.Models;
+using Microsoft.Azure.Management.ResourceManager.Fluent.Core;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Azure.WebJobs.Extensions.EventGrid;
@@ -10,7 +11,6 @@ using Rgom.PrivateDns.Functions.Data;
 using Rgom.PrivateDns.Functions.Models;
 using Rgom.PrivateDns.Functions.Services;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -52,10 +52,10 @@ namespace Rgom.PrivateDns.Functions
 			switch (eventType)
 			{
 				case "Microsoft.Resources.ResourceWriteSuccess":
-					instanceId = await starter.StartNewAsync(nameof(OrchestrateNetworkInterfaceCreatedAsync), eventGridEvent.Id, durableParameters);
+					instanceId = await starter.StartNewAsync(nameof(OrchestrateNetworkInterfaceWriteAsync), eventGridEvent.Id, durableParameters);
 					break;
 				case "Microsoft.Resources.ResourceDeleteSuccess":
-					instanceId = await starter.StartNewAsync(nameof(OrchestrateNetworkInterfaceDeletedAsync), eventGridEvent.Id, durableParameters);
+					instanceId = await starter.StartNewAsync(nameof(OrchestrateNetworkInterfaceDeleteAsync), eventGridEvent.Id, durableParameters);
 					break;
 				default:
 					throw new Exception();
@@ -64,32 +64,43 @@ namespace Rgom.PrivateDns.Functions
 			log.LogInformation($"Started orchestration with ID = '{instanceId}'.");
 		}
 
-		[FunctionName(nameof(OrchestrateNetworkInterfaceCreatedAsync))]
-		public async Task<bool> OrchestrateNetworkInterfaceCreatedAsync([OrchestrationTrigger] IDurableOrchestrationContext context)
+		[FunctionName(nameof(OrchestrateNetworkInterfaceWriteAsync))]
+		public async Task<bool> OrchestrateNetworkInterfaceWriteAsync([OrchestrationTrigger] IDurableOrchestrationContext context)
 		{
 			var orchestratorParameters = context.GetInput<OrchestratorParameters>();
 
 			// Get NIC that was just created.
 			var nic = await context.CallActivityAsync<NetworkInterface>(nameof(GetNetworkInterfaceAsync), orchestratorParameters);
 
-			var ipConfig = nic.IpConfigurations[0];
-
 			// Ignore if this is a private endpoint NIC - this is handled by the PrivateEndpointEventFunctions.
+			var ipConfig = nic.IpConfigurations[0];
 			if (ipConfig.Name.Contains("privateEndpoint", StringComparison.InvariantCultureIgnoreCase))
 			{
 				return true;
 			}
 
-			string hostname = null;
+			var dnsEntity = await context.CallActivityAsync<DnsEntity>(nameof(SharedDurableFunctions.GetDnsEntityAsync), orchestratorParameters.ResourceId);
 
+			if (dnsEntity == null)
+			{
+				return await OrchestrateNetworkInterfaceCreateAsync(context, nic);
+			}
+			else
+			{
+				return await OrchestrateNetworkInterfaceUpdateAsync(context, nic, dnsEntity);
+			}
+		}
+
+		private async Task<bool> OrchestrateNetworkInterfaceCreateAsync(IDurableOrchestrationContext context, NetworkInterface nic)
+		{
 			// If NIC wasn't tagged [with a value] there's nothing for us to do so just return.
-			if (nic.Tags == null)
+			if (nic.Tags == null || !nic.Tags.ContainsKey(hostNameTagName))
 			{
 				return true;
 			}
 
-			hostname = nic.Tags.SingleOrDefault(s => s.Key.Equals(hostNameTagName, StringComparison.OrdinalIgnoreCase)).Value;
-
+			// If NIC tag is empty string there's nothing for us to do so just return.
+			var hostname = nic.Tags.SingleOrDefault(s => s.Key.Equals(hostNameTagName, StringComparison.OrdinalIgnoreCase)).Value;
 			if (string.IsNullOrWhiteSpace(hostname))
 			{
 				return true;
@@ -98,11 +109,11 @@ namespace Rgom.PrivateDns.Functions
 			// Create new recordset in default private DNS zone.
 			var dnsParameters = new DnsParameters
 			{
-				ResourceId = orchestratorParameters.ResourceId,
+				ResourceId = nic.Id,
 				DnsZone = defaultPrivateDnsZone,
 				Hostname = hostname,
 				RecordType = RecordType.A,
-				IpAddress = ipConfig.PrivateIPAddress
+				IpAddress = nic.IpConfigurations[0].PrivateIPAddress
 			};
 
 			var recordSetCreated = await context.CallActivityAsync<bool>(nameof(SharedDurableFunctions.CreateDnsRecordSetAsync), dnsParameters);
@@ -116,21 +127,47 @@ namespace Rgom.PrivateDns.Functions
 			return false;
 		}
 
-		[FunctionName(nameof(OrchestrateNetworkInterfaceDeletedAsync))]
-		public async Task<bool> OrchestrateNetworkInterfaceDeletedAsync([OrchestrationTrigger] IDurableOrchestrationContext context)
+		private async Task<bool> OrchestrateNetworkInterfaceUpdateAsync(IDurableOrchestrationContext context, NetworkInterface nic, DnsEntity dnsEntity)
+		{
+			// If NIC tags were removed or no longer contains the hostname tag.
+			var remove = nic.Tags == null || !nic.Tags.ContainsKey(hostNameTagName);
+			var replace = !remove && !nic.Tags[hostNameTagName].Equals(dnsEntity.Hostname, StringComparison.OrdinalIgnoreCase);
+			var removed = false;
+
+			var orchestratorParameters = new OrchestratorParameters
+			{
+				SubscriptionId = ResourceId.FromString(nic.Id).SubscriptionId,
+				ResourceId = nic.Id
+			};
+
+			if (remove || replace)
+			{
+				removed = await context.CallSubOrchestratorAsync<bool>(nameof(OrchestrateNetworkInterfaceDeleteAsync), orchestratorParameters);
+			}
+
+			if (replace && removed)
+			{
+				return await context.CallSubOrchestratorAsync<bool>(nameof(OrchestrateNetworkInterfaceWriteAsync), orchestratorParameters);
+			}
+
+			return true;
+		}
+
+		[FunctionName(nameof(OrchestrateNetworkInterfaceDeleteAsync))]
+		public async Task<bool> OrchestrateNetworkInterfaceDeleteAsync([OrchestrationTrigger] IDurableOrchestrationContext context)
 		{
 			var orchestratorParameters = context.GetInput<OrchestratorParameters>();
 
 			// Get DNS Entities associated with this Resource Id
-			var dnsEntities = await context.CallActivityAsync<List<DnsEntity>>(nameof(SharedDurableFunctions.ListDnsEntitiesAsync), orchestratorParameters.ResourceId);
+			var dnsEntity = await context.CallActivityAsync<DnsEntity>(nameof(SharedDurableFunctions.GetDnsEntityAsync), orchestratorParameters.ResourceId);
 
-			foreach (var dnsEntity in dnsEntities)
+			if (dnsEntity != null)
 			{
 				var dnsParameters = new DnsParameters
 				{
 					ResourceId = orchestratorParameters.ResourceId,
 					DnsZone = dnsEntity.DnsZone,
-					Hostname = dnsEntity.RowKey,
+					Hostname = dnsEntity.Hostname,
 					IpAddress = dnsEntity.IpAddress,
 					RecordType = dnsEntity.RecordType
 				};

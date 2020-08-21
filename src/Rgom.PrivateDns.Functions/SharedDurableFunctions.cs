@@ -39,10 +39,10 @@ namespace Rgom.PrivateDns.Functions
 			return await dnsEntityService.InsertOrUpdateDnsEntityAsync(dnsEntity);
 		}
 
-		[FunctionName(nameof(ListDnsEntitiesAsync))]
-		public async Task<List<DnsEntity>> ListDnsEntitiesAsync([ActivityTrigger] string resourceId, ILogger log)
+		[FunctionName(nameof(GetDnsEntityAsync))]
+		public async Task<DnsEntity> GetDnsEntityAsync([ActivityTrigger] string resourceId, ILogger log)
 		{
-			return await dnsEntityService.ListDnsEntitiesAsync(resourceId);
+			return await dnsEntityService.GetDnsEntityAsync(resourceId);
 		}
 
 		[FunctionName(nameof(DeleteDnsRecordSetAsync))]

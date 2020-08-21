@@ -71,7 +71,7 @@ namespace Rgom.PrivateDns.Functions
 					ResourceId = nic.Id
 				};
 
-				await context.CallSubOrchestratorAsync(nameof(NetworkInterfaceEventFunctions.OrchestrateNetworkInterfaceCreatedAsync), nicOrchestratorParameters);
+				await context.CallSubOrchestratorAsync(nameof(NetworkInterfaceEventFunctions.OrchestrateNetworkInterfaceWriteAsync), nicOrchestratorParameters);
 			}
 
 			return true;
@@ -93,7 +93,7 @@ namespace Rgom.PrivateDns.Functions
 					ResourceId = nic.Id
 				};
 
-				await context.CallSubOrchestratorAsync(nameof(NetworkInterfaceEventFunctions.OrchestrateNetworkInterfaceDeletedAsync), nicOrchestratorParameters);
+				await context.CallSubOrchestratorAsync(nameof(NetworkInterfaceEventFunctions.OrchestrateNetworkInterfaceDeleteAsync), nicOrchestratorParameters);
 			}
 
 			return true;

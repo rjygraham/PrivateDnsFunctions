@@ -2,7 +2,6 @@
 using Microsoft.WindowsAzure.Storage.Table;
 using Rgom.PrivateDns.Functions.Data;
 using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -40,27 +39,20 @@ namespace Rgom.PrivateDns.Functions.Services
 			}
 		}
 
-		public async Task<List<DnsEntity>> ListDnsEntitiesAsync(string resourceId)
+		public async Task<DnsEntity> GetDnsEntityAsync(string resourceId)
 		{
-			var query = new TableQuery<DnsEntity>().Where(
-				TableQuery.GenerateFilterCondition(
-					"PartitionKey",
-					QueryComparisons.Equal,
-					resourceId.Replace("/", ":").ToLower()
-				)
-			);
+			var entity = new DnsEntity(resourceId);
 
-			var entities = new List<DnsEntity>();
+			var retrieveOperation = TableOperation.Retrieve<DnsEntity>(entity.PartitionKey, entity.RowKey);
 
-			TableQuerySegment<DnsEntity> segment = null;
+			var result = await table.Value.ExecuteAsync(retrieveOperation);
 
-			while (segment == null || segment.ContinuationToken != null)
+			if (result.HttpStatusCode == (int)HttpStatusCode.OK)
 			{
-				segment = await table.Value.ExecuteQuerySegmentedAsync(query, segment?.ContinuationToken);
-				entities.AddRange(segment);
+				return (DnsEntity)result.Result;
 			}
 
-			return entities;
+			return null;
 		}
 
 		public async Task<bool> DeleteDnsEntityAsync(DnsEntity entity)
