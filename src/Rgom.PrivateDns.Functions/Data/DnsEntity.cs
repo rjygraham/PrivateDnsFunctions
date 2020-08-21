@@ -1,10 +1,12 @@
 ﻿using Microsoft.Azure.Management.PrivateDns.Models;
 using Microsoft.WindowsAzure.Storage.Table;
+using Rgom.PrivateDns.Functions.Extensions;
 
 namespace Rgom.PrivateDns.Functions.Data
 {
 	public class DnsEntity : TableEntity
 	{
+		public string Hostname { get; set; }
 		public string DnsZone { get; set; }
 		public RecordType RecordType { get; set; }
 		public string IpAddress { get; set; }
@@ -13,15 +15,19 @@ namespace Rgom.PrivateDns.Functions.Data
 		{
 		}
 
-		public DnsEntity(string resourceId, string hostname)
+		public DnsEntity(string resourceId)
 		{
-			PartitionKey = resourceId.Replace('/', ':').ToLower();
-			RowKey = hostname.ToLower();
+			resourceId = resourceId.Replace('/', ':').ToLower();
+			var index = resourceId.IndexOfNth(':', 5);
+
+			PartitionKey = resourceId.Substring(0, index);
+			RowKey = resourceId.Substring(++index);
 		}
 
 		public DnsEntity(string resourceId, string hostname, string dnsZone, RecordType recordType, string ipAddress)
-			: this(resourceId, hostname)
+			: this(resourceId)
 		{
+			Hostname = hostname;
 			DnsZone = dnsZone;
 			RecordType = recordType;
 			IpAddress = ipAddress;
